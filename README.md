@@ -136,14 +136,27 @@ __Название__ проекта используется при соверш
 
 ## <a name="p-codes"></a>Коды платежных систем
 
+https://tegro.money/docs/other/payment-system-ids/
+
 ## <a name="phone-codes"></a>Коды моб. телефонов
 
+https://tegro.money/docs/other/mobile-codes/
+
 ## <a name="code-word"></a>Буквенные коды валют
+
+https://tegro.money/docs/other/currency-codes/
 
 # FAQ
 
 ## <a name="tarifs"></a>Тарифы и лимиты
 
+https://tegro.money/docs/faq/tariffs-and-limits/
+
 ## <a name="mo-project"></a>Модерация проекта
 
+https://tegro.money/docs/faq/moderation/
+
 ## <a name="mass"></a>Массовые выплаты
+
+https://tegro.money/docs/faq/mass-payments/
+
