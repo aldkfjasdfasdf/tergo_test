@@ -28,7 +28,7 @@
   - [Модерация проекта](#модерация-проекта)
   - [Массовые выплаты](#массовые-выплаты)
 
-# Документация и API
+# Документация и API с примерами на Python
 
 API сервиса Tegro.money позволяет принимать платежи, делать возвраты, узнавать статусы операции и многое другое. Для работы по API потребуется магазин в нашей системе.
 
@@ -103,11 +103,169 @@ __Название__ проекта используется при соверш
 
 ## <a name="create-p"></a>Создание платежа
 
+С Tegro.money и продавец, и покупатель получают «электронного кассира», который значительно упрощает проведение операций и ускоряет платежи.
+
+Для создания платежа нужно передать необходимые параметры на специальный урл https://tegro.money/pay/?params
+
+__Обязательные__ параметры:
+
+| Ключ | Описание |
+|-----------|-----------|
+| shop_id		 | Публичный ключ проекта |
+| amount		 | Сумма платежа |
+| order_id		 | Идентификатор заказа (номер платежа или email клиента) |
+| currency		 | Валюта платежа (RUB, USD, EUR) |
+| sign		 | Подпись запроса |
+
+Дополнительные параметры:
+
+| Ключ | Описание |
+|-----------|-----------|
+| lang		 | Язык интерфейса (ru, en) |
+| test		 | Если указан со значением "1" - оплата пройдет в тестовом режиме |
+| payment_system		 | ID платежной системы |
+| success_url		 | Урл успеха |
+| fail_url		 | Урл ошибки |
+| notify_url		 | Урл уведомлений |
+
+Для формирования подписи необходимо отсортировать по ключу все обязательные параметры, объединить пары ключ/значение символом **&** и добавить в конец Ваш секретный ключ. Затем захешировать получившуюся строку MD5, например
+
+```
+import hashlib
+import urllib.parse
+
+secret = 'GB%^&*YJni677'
+data = {
+    'shop_id': 'D0F98E7D7742609DC508D86BB7500914',
+    'amount': 100,
+    'currency': 'RUB',
+    'order_id': '123'
+}
+
+data_sorted = dict(sorted(data.items()))
+data_encoded = urllib.parse.urlencode(data_sorted)
+str_to_sign = data_encoded + secret
+sign = hashlib.md5(str_to_sign.encode()).hexdigest()
+print(sign)
+```
+
+**Внимание!** Если в форму оплаты был передан флаг тестовой оплаты test=1, этот параметр так же участвует в формировании подписи:
+```
+import hashlib
+import urllib.parse
+
+secret = 'GB%^&*YJni677'
+data = {
+    'shop_id': 'D0F98E7D7742609DC508D86BB7500914',
+    'amount': 100,
+    'currency': 'RUB',
+    'order_id': '123',
+    'test': '1'
+}
+
+data_sorted = dict(sorted(data.items()))
+data_encoded = urllib.parse.urlencode(data_sorted)
+str_to_sign = data_encoded + secret
+sign = hashlib.md5(str_to_sign.encode()).hexdigest()
+print(sign)
+```
+
+Возможен переход сразу в платежную систему, если Вы готовы передать все данные для оплаты во входящем запросе. Для этого отправить данные нужно методом POST на урл https://tegro.money/pay/form/ обязательно указать параметр payment_system и передать все обязательные поля для этого способа оплаты. В большинстве случаев это **email**, для дополнительной информации обратитесь в службу поддержки.
+
+Пример:
+```
+<form action="https://tegro.money/pay/form/" method="post">
+    <input type="hidden" name="shop_id" value="D0F98E7D7742609DC508D86BB7500914">
+    <input type="hidden" name="amount" value="100">
+    <input type="hidden" name="order_id" value="123">
+    <input type="hidden" name="lang" value="ru">
+    <input type="hidden" name="currency" value="RUB">
+    <input type="hidden" name="payment_system" value="11">
+    <input type="hidden" name="fields[email]" value="user@site.ru">
+    <input type="hidden" name="sign" value="e51845e62b106d245cc96c431d8aae42">
+    <input type="submit" value="Оплатить">
+</form>
+```
+
 ## <a name="create-f"></a>Создание простой формы в личном кабинете
+
+Перейдите на страницу настроек магазина https://tegro.money/my/shop-settings/ и щелкните по вкладке "Форма оплаты"
+
+![image](https://github.com/aldkfjasdfasdf/tergo_test/assets/134290831/96692d5d-59ff-490c-8113-1afbe36aa1c4)
+
+В таблице справа заполните необходимые поля и нажмите кнопку "получить форму", чтобы получить HTML код для вставки формы на свою страницу
+
+![image](https://github.com/aldkfjasdfasdf/tergo_test/assets/134290831/2c9bf7e8-ec87-4ffe-8d6a-d8db164f5c52)
+
+Или просто нажмите на кнопку из примера и ссылка для оплаты откроется в новом окне
+
+![image](https://github.com/aldkfjasdfasdf/tergo_test/assets/134290831/de3823df-9052-4feb-a826-d76db72a95f5)
+
 
 ## <a name="info-order"></a>Передача информации о заказе
 
+В некоторых случаях на форму оплаты необходимо отправить данные о составе заказа, как то - название товара/услуги, количество и стоимость. Для этого необходимо включить в запрос параметр **receipt**, например:
+
+```
+<form action="https://tegro.money/pay/form/" method="post">
+<input type="hidden" name="shop_id" value="D0F98E7D7742609DC508D86BB7500914">
+
+
+<!-- Товар 1 -->
+<input type="hidden" name="receipt[items][0][name]" value="Пример услуги">
+<input type="hidden" name="receipt[items][0][count]" value="1">
+<input type="hidden" name="receipt[items][0][price]" value="20">
+
+<!-- Товар 2 -->
+<input type="hidden" name="receipt[items][1][name]" value="Пример услуги 2">
+<input type="hidden" name="receipt[items][1][count]" value="2">
+<input type="hidden" name="receipt[items][1][price]" value="40">
+
+
+<!-- общая сумма оплаты должна равняться сумме всех товаров! -->
+<input type="hidden" name="amount" value="100">
+
+<input type="hidden" name="order_id" value="123">
+<input type="hidden" name="lang" value="ru">
+<input type="hidden" name="currency" value="RUB">
+<input type="hidden" name="payment_system" value="11">
+<input type="hidden" name="fields[email]" value="user@site.ru">
+<input type="hidden" name="sign" value="e51845e62b106d245cc96c431d8aae42">
+<input type="submit" value="Оплатить">
+</form>
+```
+
+**Внимание!** Данную форму необходимо отправлять на наш платежный урл методом **POST**
+
 ## <a name="notification-p"></a>Уведомление об оплате
+
+После оплаты, на указанный в настройках Вашего магазина URL уведомлений будет отправлен запрос, содержащий информацию об оплате
+
+| Ключ | Описание |
+|-----------|-----------|
+shop_id |	Публичный ключ проекта |
+amount |	Сумма платежа |
+order_id |	Идентификатор заказа |
+payment_system |	Платежная система |
+currency |	Валюта платежа (RUB, USD, EUR) |
+test |	Если был задан при оплате |
+sign |	Подпись запроса |
+
+Подпись формируется так же как и при создании формы, но в формировании хеш участвуют все поля, например
+
+```
+import hashlib
+from urllib.parse import urlencode
+
+secret = 'GB%^&*YJni677'
+data = {k: v for k, v in request.POST.items() if k != 'sign'}
+data_sorted = dict(sorted(data.items()))
+data_encoded = urlencode(data_sorted)
+sign = hashlib.md5((data_encoded + secret).encode()).hexdigest()
+print(sign)
+```
+
+В приведенном примере **request.POST** это ваш реквест данными из формы
 
 # API
 
