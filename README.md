@@ -293,10 +293,10 @@ import hashlib
 import hmac
 import time
 
-api_key = 'EEFA1913EA9D9351469B1E5D852A'
+api_key = 'dQv2ngK8c5sUSdsJ'
 
 data = {
-    'shop_id': '1913EA9D9351469B1E5D852A',
+    'shop_id': 'D2644A5A968CE44A9C7706F2D1E03EEB',
     'nonce': str(int(time.time()))
 }
 
@@ -311,7 +311,7 @@ headers = {
 }
 
 response = requests.post(url, data=body, headers=headers)
-print(response.text)
+print(response.json())
 ```
 
 ## <a name="create-order"></a>Создание заказа
@@ -355,33 +355,53 @@ receipt |	array |	Данные о корзине |
 ### Пример запроса
 
 ```
-{
-  "shop_id": "1913EA935149B1E5D852A",
-  "nonce": 1613435880,
-  "currency": "RUB",
-  "amount": 1200,
-  "order_id": "test order",
-  "payment_system": 5,
-  "fields": {
-    "email": "user@email.ru",
-    "phone": "79111231212"
-  },
-  "receipt": {
-    "items": [
-      {
-        "name": "test item 1",
-        "count": 1,
-        "price": 600
-      },
-      {
-        "name": "test item 2",
-        "count": 1,
-        "price": 600
-      }
-    ]
-  }
+import requests
+import json
+import hashlib
+import hmac
+import time
+
+api_key = 'dQv2ngK8c5sUSdsJ'
+
+data = {
+    "shop_id": "D2644A5A968CE44A9C7706F2D1E03EEB",
+    "nonce": int(time.time()),
+    "currency": "RUB",
+    "amount": 1200,
+    "order_id": "test order",
+    "payment_system": 5,
+    "fields": {
+        "email": "user@email.ru",
+        "phone": "79111231212"
+    },
+    "receipt": {
+        "items": [
+            {
+                "name": "test item 1",
+                "count": 1,
+                "price": 600
+            },
+            {
+                "name": "test item 2",
+                "count": 1,
+                "price": 600
+            } 
+        ]
+    }
 }
 
+body = json.dumps(data)
+sign = hmac.new(api_key.encode('utf-8'), body.encode('utf-8'), hashlib.sha256).hexdigest()
+
+url = "https://tegro.money/api/createOrder/"
+
+headers = {
+    "Authorization": "Bearer " + sign,
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, data=body, headers=headers)
+print(response.json())
 ```
 
 ## <a name="shops-list"></a>Список магазинов
@@ -436,11 +456,33 @@ nonce	 |integer	 |Уникальный номер запроса |
 
 ### Пример запроса
 ```
-{
-  "shop_id": "1913EA935149B1E5D852A",
-  "nonce": 1613435880
+import requests
+import json
+import hashlib
+import hmac
+import time
+
+api_key = 'dQv2ngK8c5sUSdsJ'
+
+data = {
+    "shop_id": "D2644A5A968CE44A9C7706F2D1E03EEB",
+    "nonce": int(time.time())
 }
+
+body = json.dumps(data)
+sign = hmac.new(api_key.encode('utf-8'), body.encode('utf-8'), hashlib.sha256).hexdigest()
+
+url = "https://tegro.money/api/shops/"
+
+headers = {
+    "Authorization": "Bearer " + sign,
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, data=body, headers=headers)
+print(response.json())
 ```
+
 ## <a name="balance"></a>Баланс
 
     POST https://tegro.money/api/balance/
@@ -479,32 +521,53 @@ nonce	 |integer	 |Уникальный номер запроса |
 
 ### Пример запроса
 ```
-{
-  "shop_id": "1913EA935149B1E5D852A",
-  "nonce": 1613435880,
-  "currency": "RUB",
-  "amount": 1200,
-  "order_id": "test order",
-  "payment_system": 5,
-  "fields": {
-    "email": "user@email.ru",
-    "phone": "79111231212"
-  },
-  "receipt": {
-    "items": [
-      {
-        "name": "test item 1",
-        "count": 1,
-        "price": 600
-      },
-      {
-        "name": "test item 2",
-        "count": 1,
-        "price": 600
-      }
-    ]
-  }
+import requests
+import json
+import hashlib
+import hmac
+import time
+
+api_key = 'dQv2ngK8c5sUSdsJ'
+
+data = {
+    "shop_id": "D2644A5A968CE44A9C7706F2D1E03EEB",
+    "nonce": int(time.time()),
+    "currency": "RUB",
+    "amount": 1200,
+    "order_id": "test order",
+    "payment_system": 5,
+    "fields": {
+        "email": "user@email.ru",
+        "phone": "79111231212"
+    },
+    "receipt": {
+        "items": [
+        {
+            "name": "test item 1",
+            "count": 1,
+            "price": 600
+        },
+        {
+            "name": "test item 2",
+            "count": 1,
+            "price": 600
+        }
+        ]
+    }
 }
+
+body = json.dumps(data)
+sign = hmac.new(api_key.encode('utf-8'), body.encode('utf-8'), hashlib.sha256).hexdigest()
+
+url = "https://tegro.money/api/balance/"
+
+headers = {
+    "Authorization": "Bearer " + sign,
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, data=body, headers=headers)
+print(response.json())
 ```
 
 ## <a name="check-order"></a>Проверка заказа
@@ -551,11 +614,32 @@ payment_id	 |string	 |или номер платежа магазина |
 
 ### Пример запроса
 ```
-{
-  "shop_id": "1913EA935149B1E5D852A",
-  "nonce": 1613435880,
-  "payment_id": "test order"
+import requests
+import json
+import hashlib
+import hmac
+import time
+
+api_key = 'dQv2ngK8c5sUSdsJ'
+
+data = {
+    "shop_id": "D2644A5A968CE44A9C7706F2D1E03EEB",
+    "nonce": int(time.time()),
+    "payment_id": "test order"
 }
+
+body = json.dumps(data)
+sign = hmac.new(api_key.encode('utf-8'), body.encode('utf-8'), hashlib.sha256).hexdigest()
+
+url = "https://tegro.money/api/order/"
+
+headers = {
+    "Authorization": "Bearer " + sign,
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, data=body, headers=headers)
+print(response.json())
 ```
 
 
@@ -617,11 +701,32 @@ page	 |integer	 |Страница|
 
 ### Пример запроса
 ```
-{
-  "shop_id": "1913EA935149B1E5D852A",
-  "nonce": 1613435880,
-  "page": 1
+import requests
+import json
+import hashlib
+import hmac
+import time
+
+api_key = 'dQv2ngK8c5sUSdsJ'
+
+data = {
+    "shop_id": "D2644A5A968CE44A9C7706F2D1E03EEB",
+    "nonce": int(time.time()),
+    "page": 1
 }
+
+body = json.dumps(data)
+sign = hmac.new(api_key.encode('utf-8'), body.encode('utf-8'), hashlib.sha256).hexdigest()
+
+url = "https://tegro.money/api/orders/"
+
+headers = {
+    "Authorization": "Bearer " + sign,
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, data=body, headers=headers)
+print(response.json())
 ```
 
 ## <a name="with"></a>Вывод средств
